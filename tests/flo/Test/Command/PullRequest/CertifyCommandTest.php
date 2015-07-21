@@ -18,8 +18,8 @@ class CertifyCommandTest extends PullRequestTestHelper {
     $command_run_script = $this->application->find('pr-certify');
     $command_tester = new CommandTester($command_run_script);
     $command_tester->execute(array(
-      'command' => $command_run_script->getName(),
-      'pull-request' => "Not-A-Valid-PR",
+        'command' => $command_run_script->getName(),
+        'pull-request' => "Not-A-Valid-PR",
     ));
   }
 
@@ -35,8 +35,8 @@ class CertifyCommandTest extends PullRequestTestHelper {
 
     $command_tester = new CommandTester($command_run_script);
     $command_tester->execute(array(
-      'command' => $command_run_script->getName(),
-      'pull-request' => "1",
+        'command' => $command_run_script->getName(),
+        'pull-request' => "1",
     ));
 
     $this->assertEquals("PR #1 has been certified.\n", $command_tester->getDisplay());

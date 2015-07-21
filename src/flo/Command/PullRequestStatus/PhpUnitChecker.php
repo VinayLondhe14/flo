@@ -66,7 +66,7 @@ class PhpUnitChecker extends Command {
       $gh_statue_desc = 'Flo: PHPUnit failure.';
     }
     else {
-      $output->writeln("<info>phpunit sucess.</info>");
+      $output->writeln("<info>phpunit success.</info>");
       $gh_status_state = 'success';
       $gh_statue_desc = 'Flo: PHPUnit success.';
     }

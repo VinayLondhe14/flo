@@ -80,7 +80,7 @@ class PhpSyntaxChecker extends Command {
     $process = new Process($git_diff_command);
     $process->run();
     $git_diff_output = $process->getOutput();
-
+    var_dump($git_diff_output);
     // Nothing to check!
     if (empty($git_diff_output)) {
       $output->writeln("<info>No files to check.</info>");
