@@ -37,20 +37,19 @@ class ConfigDelCommand extends Command {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $fs = new Filesystem();
+    $dumper = new Dumper();
     $home_directory = $this->getHome();
     $flo_config_file = $home_directory . '/.config/flo';
 
     if (!$fs->exists($flo_config_file)) {
       return $output->writeln("<error>No flo config file exist.</error>");
     }
-    $dumper = new Dumper();
-    // Parse YAML into a PHP array.
-    $flo_config = Yaml::parse($flo_config_file);
 
+    $flo_config = Yaml::parse($flo_config_file);
     $config_name = $input->getArgument('config-name');
 
     if (isset($flo_config[$config_name])) {
-      // If it exists remove the key and resave the config file.
+      // If it exists remove the key and resaved the config file.
       unset($flo_config[$config_name]);
       $updated_config = $dumper->dump($flo_config, 1);
       $fs->dumpFile($flo_config_file, $updated_config);

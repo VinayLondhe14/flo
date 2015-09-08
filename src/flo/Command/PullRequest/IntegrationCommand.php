@@ -68,80 +68,6 @@ class IntegrationCommand extends Command {
     )));
 
     // Get current branch or commit.
-    $current_head = $this->getCurrentHead();
-    try {
-      $process = new Process('git checkout -B integration');
-      $process->run();
-      if (!$process->isSuccessful()) {
-        throw new \RuntimeException($process->getErrorOutput());
-      }
-
-      foreach ($pull_requests as $pr) {
-
-        // If the issue is not a PR we skip it.
-        if (empty($pr['pull_request']['patch_url'])) {
-          continue;
-        }
-
-        // If this issue has any of the following labels, we also skip it.
-        foreach ($pr['labels'] as $label) {
-          // TODO: Have a function check this.
-          if (in_array($label['name'], $this->invalid_labels)) {
-            // This continue breaks us out of the top foreach.
-            continue 2;
-          }
-        }
-
-        // Now try to apply the patch or else mark it as failure.
-        $url = $pr['pull_request']['html_url'];
-        if ($input->getOption('am')) {
-          $command = "hub am --3way {$url}";
-        } else {
-          $command = "hub merge {$url}";
-        }
-        $output->writeln("\n" . $command);
-        $process = new Process($command);
-        $process->run();
-        if (!$process->isSuccessful()) {
-          // We reset the failed AM & mark the PR as GITHUB_LABEL_MERGE_FAILED.
-          $output->writeln("<error>Failed to applied PR# {$pr['number']}: {$url}.</error>");
-          $output->writeln($process->getOutput());
-          if (!$input->getOption('no-label')) {
-            $this->addGithubLabel($pr['number'], self::GITHUB_LABEL_MERGE_FAILED);
-            $this->addGithubComment($pr['number'], implode('\n\n', array(
-                'I was unable to merge this Pull Request with the other open Pull Requests.',
-                'Perhaps the following log will assist your debugging…',
-                '```sh',
-                $process->getErrorOutput(),
-                '```',
-            )));
-          }
-
-          $process = new Process('git merge --abort');
-          $process->run();
-        } else {
-          $output->writeln("<info>Successfully applied PR #{$pr['number']}: {$url}.</info>");
-        }
-      }
-
-      // Now we deploy integration to acquia always fresh.
-      // We only do this if the --push flag is set.
-      if ($input->getOption('push')) {
-        $this->pushToAcquia();
-        $output->writeln("<info>Successfully Pushed integration branch to Acquia.</info>");
-      }
-    } finally {
-      // Return to the branch the user was previously on, if they were on one.
-      if (!empty($current_head)) {
-        $process = new Process("git checkout {$current_head}");
-        $process->run();
-      }
-
-    }
-  }
-
-  //Returns the current branch
-  protected function getCurrentHead() {
     $current_head = '';
     $process = new Process('git symbolic-ref --short HEAD');
     $process->run();
@@ -155,14 +81,78 @@ class IntegrationCommand extends Command {
         $current_head = trim($process->getOutput());
       }
     }
-    return $current_head;
-  }
 
-  protected function pushToAcquia() {
-    $process = new Process('git push acquia integration --force');
+    $process = new Process('git checkout -B integration');
     $process->run();
     if (!$process->isSuccessful()) {
       throw new \RuntimeException($process->getErrorOutput());
+    }
+
+    foreach ($pull_requests as $pr) {
+
+      // If the issue is not a PR we skip it.
+      if (empty($pr['pull_request']['patch_url'])) {
+        continue;
+      }
+
+      // If this issue has any of the following labels, we also skip it.
+      foreach ($pr['labels'] as $label) {
+        // TODO: Have a function check this.
+        if (in_array($label['name'], $this->invalid_labels)) {
+          // This continue breaks us out of the top foreach.
+          continue 2;
+        }
+      }
+
+      // Now try to apply the patch or else mark it as failure.
+      $url = $pr['pull_request']['html_url'];
+      if ($input->getOption('am')) {
+        $command = "hub am --3way {$url}";
+      }
+      else {
+        $command = "hub merge {$url}";
+      }
+      $output->writeln("\n" . $command);
+      $process = new Process($command);
+      $process->run();
+      if (!$process->isSuccessful()) {
+        // We reset the failed AM & mark the PR as GITHUB_LABEL_MERGE_FAILED.
+        $output->writeln("<error>Failed to applied PR# {$pr['number']}: {$url}.</error>");
+        $output->writeln($process->getOutput());
+        if (!$input->getOption('no-label')) {
+          $this->addGithubLabel($pr['number'], self::GITHUB_LABEL_MERGE_FAILED);
+          $this->addGithubComment($pr['number'], implode('\n\n', array(
+            'I was unable to merge this Pull Request with the other open Pull Requests.',
+            'Perhaps the following log will assist your debugging…',
+            '```sh',
+            $process->getErrorOutput(),
+            '```',
+          )));
+        }
+
+        $process = new Process('git merge --abort');
+        $process->run();
+      }
+      else {
+        $output->writeln("<info>Successfully applied PR #{$pr['number']}: {$url}.</info>");
+      }
+    }
+
+    // Now we deploy integration to acquia always fresh.
+    // We only do this if the --push flag is set.
+    if ($input->getOption('push')) {
+      $process = new Process('git push acquia integration --force');
+      $process->run();
+      if (!$process->isSuccessful()) {
+        throw new \RuntimeException($process->getErrorOutput());
+      }
+      $output->writeln("<info>Successfully Pushed integration branch to Acquia.</info>");
+    }
+
+    // Return to the branch the user was previously on, if they were on one.
+    if (!empty($current_head)) {
+      $process = new Process("git checkout {$current_head}");
+      $process->run();
     }
   }
 }

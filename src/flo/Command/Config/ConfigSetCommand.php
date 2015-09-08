@@ -43,6 +43,7 @@ class ConfigSetCommand extends Command {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $fs = new Filesystem();
+    $dumper = new Dumper();
     $home_directory = $this->getHome();
     $flo_config_file = $home_directory . '/.config/flo';
 
@@ -50,8 +51,7 @@ class ConfigSetCommand extends Command {
       $fs->dumpFile($flo_config_file, "");
       $output->writeln("<error>No flo config file exist.</error>");
     }
-    $dumper = new Dumper();
-    // Parse YAML into a PHP array.
+
     $flo_config = Yaml::parse($flo_config_file);
 
     $config_name = $input->getArgument('config-name');
