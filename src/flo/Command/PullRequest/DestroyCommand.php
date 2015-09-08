@@ -119,6 +119,9 @@ class DestroyCommand extends Command {
 
           $output->writeln("<info>Successfully destroyed PR #{$destroy_pr}</info>");
         }
+        else {
+          throw new \Exception("Pull request directories path does not exist.");
+        }
       }
     }
     else {
