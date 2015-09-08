@@ -39,4 +39,21 @@ class DestroyCommandTest extends Test\FunctionalFramework
             'pull-request' => "Not-A-Valid-PR",
         ));
     }
+
+
+    /**
+     * Test Running pr-destroy with wrong PR directory path.
+     *
+     * @expectedException Exception
+     * @expectedExceptionMessageRegExp #Pull request directories path does not exist.#
+     */
+
+    public function testPrPathDoesNotExist() {
+        $command_run_script = $this->application->find('pr-destroy');
+        $command_tester = new CommandTester($command_run_script);
+        $command_tester->execute(array(
+            'command' => $command_run_script->getName(),
+            'pull-request' => "2",
+        ));
+    }
 }
