@@ -20,7 +20,7 @@ class PhpCodeStyleCheckerTest extends Test\FunctionalFramework {
    */
   public function setUp() {
     $this->application = new Application();
-    //parent::setUp();
+    parent::setUp();
   }
 
   public function testNoFilesToCheck() {
