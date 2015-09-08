@@ -44,7 +44,7 @@ class PhpSyntaxChecker extends Command {
       'profile',
     );
     $parallel_lint_extensions = implode(',', $extensions);
-    $parallel_lint = "./vendor/bin/parallel-lint -e {$parallel_lint_extensions} ";
+    $parallel_lint = "./vendor/bin/parallel-lint -e {$parallel_lint_extensions} --stdin";
     $targetBranch = getenv(self::GITHUB_PULL_REQUEST_TARGET_BRANCH);
     $targetRef = getenv(self::GITHUB_PULL_REQUEST_COMMIT);
     $targetURL = getenv(self::JENKINS_BUILD_URL);
